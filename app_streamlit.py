@@ -1,3 +1,4 @@
+# app_streamlit.py
 import streamlit as st
 from app import generar_reporte_completo
 
@@ -6,10 +7,14 @@ st.set_page_config(page_title="Detector & Humanizador IA", page_icon="🤖", lay
 st.title("📝 Detector y Humanizador de Texto IA")
 st.markdown("Analiza un texto, detecta si fue escrito por IA y humanízalo en el estilo que prefieras.")
 
+# Entrada de texto
 texto = st.text_area("✍️ Ingresa tu texto:", height=200)
+
+# Parámetros de configuración
 umbral = st.slider("⚖️ Umbral IA (%)", 0, 100, 70)
 estilo = st.selectbox("🎨 Estilo de humanización", ["casual", "formal", "narrativo", "periodístico"])
 
+# Botón de análisis
 if st.button("🔎 Analizar"):
     reporte = generar_reporte_completo(texto, umbral_ia=umbral, estilo=estilo)
 
@@ -19,7 +24,11 @@ if st.button("🔎 Analizar"):
         st.subheader("📊 Resultados de detección")
         st.write(f"**Probabilidad IA:** {reporte['prob_ia']}%")
         st.write(f"**Probabilidad Humano:** {reporte['prob_humano']}%")
-        
+
+        # Mostrar la decisión cualitativa (nuevo)
+        if "decision" in reporte:
+            st.markdown(f"**🔔 Clasificación final:** {reporte['decision']}")
+
         st.write("**Razones de la detección:**")
         for razon in reporte['razones']:
             st.write(f"- {razon}")
