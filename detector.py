@@ -61,7 +61,7 @@ def analizar_texto(texto):
     if len(frases) > 3:
         longitudes = [len(f.split()) for f in frases]
         if max(longitudes) - min(longitudes) < 6:
-            score_ia += 15
+            score_ia += 25  # peso más alto
             razones.append("Las oraciones tienen longitudes muy similares.")
 
     # 5. Sintaxis compleja
@@ -85,19 +85,19 @@ def analizar_texto(texto):
     perp = aproximar_perplexity(texto)
     burst = medir_burstiness(texto)
 
-    if perp < 40:  # texto demasiado predecible
-        score_ia += 20
-        razones.append(f"Baja perplexity ({perp:.2f}): muy predecible, típico de IA.")
-    elif perp > 150:  # humano suele tener más riqueza
+    if perp < 40:
+        score_ia += 35   # antes 20
+        razones.append(f"Baja perplexity ({perp:.2f}): texto muy predecible.")
+    elif perp > 150:
         score_ia -= 10
-        razones.append(f"Perplexity alta ({perp:.2f}): más riqueza lingüística, típico de humano.")
+        razones.append(f"Perplexity alta ({perp:.2f}): más riqueza, típico humano.")
 
-    if burst < 0.2:  # poca variación
-        score_ia += 20
-        razones.append(f"Burstiness baja ({burst:.2f}): poca variación en frases, típico de IA.")
-    elif burst > 0.5:  # mucha variación
+    if burst < 0.2:
+        score_ia += 30   # antes 20
+        razones.append(f"Burstiness baja ({burst:.2f}): poca variación.")
+    elif burst > 0.5:
         score_ia -= 10
-        razones.append(f"Burstiness alta ({burst:.2f}): variación natural en frases, típico de humano.")
+        razones.append(f"Burstiness alta ({burst:.2f}): variación natural, típico humano.")
 
     # --------------------------
     # Balance final
@@ -105,5 +105,12 @@ def analizar_texto(texto):
     prob_ia = min(100, max(0, score_ia))
     prob_humano = 100 - prob_ia
 
-    return prob_ia, prob_humano, razones
+    # Clasificación cualitativa (umbral)
+    if prob_ia >= 70:
+        decision = "Probable IA"
+    elif prob_ia <= 40:
+        decision = "Probable Humano"
+    else:
+        decision = "Mixto / Incierto"
 
+    return prob_ia, prob_humano, razones, decision
