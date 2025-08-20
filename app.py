@@ -1,0 +1,25 @@
+# app.py
+from detector import analizar_texto
+from humanizador import humanizar_texto
+
+def generar_reporte_completo(texto_original, umbral_ia=70, estilo='casual'):
+    if not texto_original.strip():
+        return {"error": "El texto proporcionado está vacío."}
+
+    try:
+        prob_ia, prob_humano, razones = analizar_texto(texto_original)
+    except Exception as e:
+        return {"error": f"Error en la fase de detección: {e}"}
+
+    texto_humanizado = ""
+    if prob_ia > umbral_ia:
+        texto_humanizado = humanizar_texto(texto_original, estilo=estilo)
+
+    reporte = {
+        "prob_ia": prob_ia,
+        "prob_humano": prob_humano,
+        "razones": razones,
+        "texto_humanizado": texto_humanizado
+    }
+
+    return reporte
