@@ -1,38 +1,44 @@
-# app_streamlit.py
 import streamlit as st
-from app import generar_reporte_completo
+from detector import analizar_texto
 
-st.set_page_config(page_title="Detector & Humanizador IA", page_icon="🤖", layout="centered")
-
-st.title("📝 Detector y Humanizador de Texto IA")
-st.markdown("Analiza un texto, detecta si fue escrito por IA y humanízalo en el estilo que prefieras.")
+st.title("🕵️ Detector de Texto IA vs Humano")
 
 # Entrada de texto
 texto = st.text_area("✍️ Ingresa tu texto:", height=200)
 
-# Parámetros de configuración
+# Parámetros
 umbral = st.slider("⚖️ Umbral IA (%)", 0, 100, 70)
-estilo = st.selectbox("🎨 Estilo de humanización", ["casual", "formal", "narrativo", "periodístico"])
+estilo = st.selectbox("😎 Estilo de humanización", ["casual", "profesional", "narrativo"])
 
-# Botón de análisis
-if st.button("🔎 Analizar"):
-    reporte = generar_reporte_completo(texto, umbral_ia=umbral, estilo=estilo)
+if st.button("🔍 Analizar"):
+    if texto.strip():
+        # Llamamos a la función detector
+        resultado = analizar_texto(texto)
 
-    if "error" in reporte:
-        st.error(reporte["error"])
+        # Validar que siempre devuelve 3 elementos
+        if len(resultado) == 3:
+            prob_ia, prob_humano, razones = resultado
+
+            st.subheader("📊 Resultados")
+            st.write(f"**Probabilidad IA:** {prob_ia}%")
+            st.write(f"**Probabilidad Humano:** {prob_humano}%")
+
+            # Veredicto final según umbral
+            if prob_ia >= umbral:
+                st.error("⚠️ El texto parece generado por IA.")
+            else:
+                st.success("✅ El texto parece humano.")
+
+            # Mostrar razones detectadas
+            if razones:
+                st.subheader("🔎 Evidencias encontradas:")
+                for r in razones:
+                    st.write(f"- {r}")
+            else:
+                st.write("No se encontraron patrones sospechosos.")
+
+        else:
+            st.error("❌ Error interno: la función no devolvió 3 valores.")
     else:
-        st.subheader("📊 Resultados de detección")
-        st.write(f"**Probabilidad IA:** {reporte['prob_ia']}%")
-        st.write(f"**Probabilidad Humano:** {reporte['prob_humano']}%")
+        st.warning("Por favor, ingresa un texto para analizar.")
 
-        # Mostrar la decisión cualitativa (nuevo)
-        if "decision" in reporte:
-            st.markdown(f"**🔔 Clasificación final:** {reporte['decision']}")
-
-        st.write("**Razones de la detección:**")
-        for razon in reporte['razones']:
-            st.write(f"- {razon}")
-
-        if reporte['texto_humanizado']:
-            st.subheader("✍️ Texto Humanizado")
-            st.write(reporte['texto_humanizado'])
