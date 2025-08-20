@@ -1,30 +1,27 @@
 import re
 
 def analizar_texto(texto):
-    """
-    Analiza el texto y devuelve un % de IA, % de humano y razones.
-    (Versión simulada, deberías conectar con un modelo real si quieres más precisión)
-    """
     razones = []
     score_ia = 0
 
-    # Regla 1: Oraciones repetitivas
-    if len(set(texto.split("."))) < len(texto.split(".")) * 0.7:
+    # Longitud del texto
+    if len(texto.split()) > 80:
         score_ia += 20
-        razones.append("Repetición excesiva de frases.")
+        razones.append("Texto muy largo y estructurado, típico de IA.")
 
-    # Regla 2: Vocabulario demasiado formal
-    if re.search(r"(optimizar|eficiencia|algoritmo|procesos)", texto.lower()):
+    # Palabras formales
+    if re.search(r"(optimizar|eficiencia|proceso|herramienta|dimensiones|estructurado)", texto.lower()):
         score_ia += 30
-        razones.append("Lenguaje técnico/formal característico de IA.")
+        razones.append("Lenguaje técnico o académico detectado.")
 
-    # Regla 3: Poca variación en la longitud de oraciones
-    longitudes = [len(p.split()) for p in texto.split(".") if p.strip()]
-    if max(longitudes, default=1) - min(longitudes, default=1) < 5:
-        score_ia += 20
-        razones.append("Poca variación en la longitud de oraciones.")
+    # Oraciones similares
+    frases = [f.strip() for f in texto.split(".") if f.strip()]
+    if len(frases) > 3 and max(len(f.split()) for f in frases) - min(len(f.split()) for f in frases) < 5:
+        score_ia += 30
+        razones.append("Oraciones con longitudes muy similares.")
 
     prob_ia = min(100, score_ia)
     prob_humano = 100 - prob_ia
 
     return prob_ia, prob_humano, razones
+
